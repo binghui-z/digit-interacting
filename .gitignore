@@ -13,3 +13,17 @@ visualization/
 *.pkl
 *.ipynb
 *.swp
+
+render_mano_ih/_discard/
+render_mano_ih/__pycache__/
+render_mano_ih/.ipynb_checkpoints/
+render_mano_ih/annotations/
+render_mano_ih/data/
+render_mano_ih/notebooks/
+render_mano_ih/vis/
+render_mano_ih/metas/
+render_mano_ih/outputs/
+render_mano_ih/*.lmdb
+render_mano_ih/.vscode/
+render_mano_ih/neural_renderer/
+render_mano_ih/neural_renderer_fzc/
