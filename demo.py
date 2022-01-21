@@ -33,4 +33,7 @@ def demo_model(args):
 
 if __name__ == "__main__":
     from src.utils.config import cfg
+    cfg.eval_on = 'minival'
+    cfg.load_from = './saved_models/db7cba8c1.pt'
+    cfg.num_workers = 0
     demo_model(cfg)

@@ -135,11 +135,12 @@ class DIGIT(nn.Module):
     def soft_argmax_1d(self, heatmap1d):
         heatmap1d = F.softmax(heatmap1d, 1)
 
-        mask = torch.cuda.comm.broadcast(
-            torch.arange(self.args.output_root_hm_shape).type(torch.cuda.FloatTensor),
-            devices=[heatmap1d.device.index],
-        )[0]
-
+        # mask = torch.cuda.comm.broadcast(
+        #     torch.arange(self.args.output_root_hm_shape).type(torch.cuda.FloatTensor),
+        #     devices=[heatmap1d.device.index],
+        # )[0]
+        #* 报错：AttributeError: module 'torch.cuda' has no attribute 'comm'   这是torch1.7的bug，如果用repo推荐的1.6就没问题。
+        mask = torch.arange(self.args.output_root_hm_shape).float().cuda()[None,:]
         accu = heatmap1d * mask
         coord = accu.sum(dim=1)
         return coord

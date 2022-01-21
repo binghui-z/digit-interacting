@@ -20,6 +20,7 @@ Our code started from the original code in https://github.com/facebookresearch/I
 
 import pickle as pkl
 import os.path as osp
+import cv2
 from tqdm import tqdm
 import torch
 import numpy as np
@@ -36,13 +37,14 @@ import json
 
 
 def _load_img(img_path, folder_name, txn):
-    key = img_path.replace("./data/InterHand/images/", "")
+    #\\105.1.1.1\Hand\HO&HH\InterHand2.6M\downloads\InterHand2.6M.images.5.fps.v0.0\InterHand2.6M_5fps_batch0\images
+    key = img_path.replace("\\\\105.1.1.1\Hand\HO&HH\InterHand2.6M\downloads\InterHand2.6M.images.5.fps.v0.0\InterHand2.6M_5fps_batch0\images\\", "")
     img = np.array(sys_utils.read_lmdb_image(txn, key))
     return img
 
 
 def _load_segm(img_path, folder_name, txn_segm):
-    segm_key = img_path.replace("./data/%s/images/" % (folder_name), "").replace(
+    segm_key = img_path.replace("\\\\105.1.1.1\Hand\HO&HH\InterHand2.6M\downloads\InterHand2.6M.images.5.fps.v0.0\InterHand2.6M_5fps_batch0\images\\", "").replace(
         "jpg", "png"
     )
     img_segm = load_segm(segm_key, txn_segm)
@@ -58,13 +60,17 @@ class ImageDataset(Dataset):
         folder_name = "InterHand"
         self.folder_name = folder_name
         self.data_path = "./data/%s" % (folder_name)
-        self.img_path = "./data/%s/images" % (folder_name)
-        self.annot_path = "./data/%s/annotations" % (folder_name)
+        self.img_path = r'\\105.1.1.1\Hand\HO&HH\InterHand2.6M\downloads\InterHand2.6M.images.5.fps.v0.0\InterHand2.6M_5fps_batch0\images'
+        self.annot_path = r'\\105.1.1.1\Hand\HO&HH\InterHand2.6M\downloads\InterHand2.6M.annotations.5.fps/annotations'
 
+        # if self.mode in ["val", "test"]:
+        #     self.rootnet_output_path = (
+        #         "./data/%s/rootnet_output/rootnet_interhand2.6m_output_%s.json"
+        #         % (folder_name, self.mode)
+        #     )
         if self.mode in ["val", "test"]:
             self.rootnet_output_path = (
-                "./data/%s/rootnet_output/rootnet_interhand2.6m_output_%s.json"
-                % (folder_name, self.mode)
+                osp.join(self.annot_path,'rootnet_output/rootnet_interhand2.6m_output_%s.json')% (self.mode)#!root前加'/'会导致路径出错
             )
             print("Loading annotation from {}".format(self.rootnet_output_path))
 
@@ -93,9 +99,7 @@ class ImageDataset(Dataset):
         ) as f:
             self.joints = json.load(f)
 
-        with open(
-            osp.join(self.data_path, "cache/meta_dict_%s.pkl" % (mode)), "rb"
-        ) as f:
+        with open("cache/meta_dict_%s.pkl" % (mode), "rb") as f:
             self.fitting_err = pkl.load(f)
 
         # get bbox and depth
@@ -123,10 +127,22 @@ class ImageDataset(Dataset):
             "data/%s/segm_32.lmdb" % (self.folder_name)
         )
         print("Fetched lmdb handle")
-        self.raw_data = downsample(self.raw_data, split)
+        #*self.raw_data = downsample(self.raw_data, split)
+        #找到这个序列的位置
+        # all_keys = list(self.raw_data.items())
+        # new_anns  = np.array(all_keys)
+        # m=0
+        # n=0
+        # for i in tqdm(range(len(all_keys))):
+        #     m+=1
+        #     if all_keys[i][1]['seq_name']=='ROM01_No_Interaction_2_Hand':
+        #         print(m)
+        #         n+=1
+        # print(m,n)
+
 
         print("Processing annotation ..")
-        raw_data_keys = list(self.raw_data.keys())
+        raw_data_keys = list(self.raw_data.keys())[32219:32219+8307]
 
         self.datalist = []
         self.datalist_sh = []
@@ -182,7 +198,7 @@ class ImageDataset(Dataset):
             seq_name = data["seq_name"]
 
             fit_err = self.fitting_err[
-                data["img_path"].replace("./data/%s/images/" % (self.folder_name), "")
+                data["img_path"].replace("\\\\105.1.1.1\\Hand\\HO&HH\\InterHand2.6M\\downloads\\InterHand2.6M.images.5.fps.v0.0\\InterHand2.6M_5fps_batch0\\images\\" , "").replace("\\",'/')
             ]
             right_valid = int(fit_err["right_fit_err"] is not None)
             left_valid = int(fit_err["left_fit_err"] is not None)
@@ -233,8 +249,20 @@ class ImageDataset(Dataset):
         joint_coord = np.concatenate((joint_img, joint_cam[:, 2, None]), 1)
 
         # image and segm load
-        img = _load_img(img_path, self.folder_name, self.txn)
-        img_segm = _load_segm(img_path, self.folder_name, self.txn_segm)
+        #img = _load_img(img_path, self.folder_name, self.txn)   #
+        #img_segm = _load_segm(img_path, self.folder_name, self.txn_segm)
+#!img
+        img = cv2.imread(img_path)
+#!img_segm
+
+        seg_img_path = osp.join("./data/InterHand",img_path.replace("\\\\105.1.1.1\Hand\HO&HH\InterHand2.6M\downloads\InterHand2.6M.images.5.fps.v0.0\InterHand2.6M_5fps_batch0\images\\", "")).replace(
+            "jpg", "png"
+        )
+        seg_img = cv2.imread(seg_img_path)
+        sum_image = seg_img.reshape(-1, 3).sum(axis=0)
+        assert sum_image[0] == sum_image[1]
+        assert sum_image[1] == sum_image[2]
+        img_segm =  img[:, :, 0]
 
         hw_size = img.shape[:2]
 

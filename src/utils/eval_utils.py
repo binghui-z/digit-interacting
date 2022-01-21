@@ -184,9 +184,9 @@ def update_mpjpe(
         if joint_valid[j]:
             mpjpe_val = np.sqrt(np.sum((pred_joint_cam[j] - gt_joint[j])**2))
             if gt_hand_type == 'right' or gt_hand_type == 'left':
-                mpjpe_sh[j].append(mpjpe_val)
+                mpjpe_sh[j].append(mpjpe_val)   #sh:single hand
             else:
-                mpjpe_ih[j].append(mpjpe_val)
+                mpjpe_ih[j].append(mpjpe_val)   #ih:interacting hand
             mpjpe_all[j].append(mpjpe_val)
         else:
             mpjpe_all[j].append(None)
@@ -211,7 +211,8 @@ def compute_metric_dict(
     tot_err = []
     eval_summary = 'MPJPE for each joint: \n'
     for j in range(joint_num*2):
-        tot_err_j = np.mean(np.concatenate((np.stack(mpjpe_sh[j]), np.stack(mpjpe_ih[j]))))
+        #tot_err_j = np.mean(np.concatenate((np.stack(mpjpe_sh[j]), np.stack(mpjpe_ih[j]))))
+        tot_err_j = np.mean(np.stack(mpjpe_ih[j]))
         joint_name = skeleton[j]['name']
         eval_summary += (joint_name + ': %.2f, ' % tot_err_j)
         tot_err.append(tot_err_j)
@@ -223,15 +224,17 @@ def compute_metric_dict(
         print('MPJPE for all hand sequences: %.2f' % (
             metric_dict['mpjpe_all']))
         print()
+    
+    #!测试代码过程中只测试inter hand，所以暂时屏蔽这部分code
+    #// eval_summary = 'MPJPE for each joint: \n'
+    #// for j in range(joint_num*2):
+    #//     mpjpe_sh[j] = np.mean(np.stack(mpjpe_sh[j]))
+    #//     joint_name = skeleton[j]['name']
+    #//     eval_summary += (joint_name + ': %.2f, ' % mpjpe_sh[j])
+    #//     metric_dict[joint_name + '_sh'] = mpjpe_sh[j]
+    #// metric_dict['mpjpe_sh'] = np.mean(mpjpe_sh)
+    metric_dict['mpjpe_sh'] = np.mean([0])
 
-    eval_summary = 'MPJPE for each joint: \n'
-    for j in range(joint_num*2):
-        mpjpe_sh[j] = np.mean(np.stack(mpjpe_sh[j]))
-        joint_name = skeleton[j]['name']
-        eval_summary += (joint_name + ': %.2f, ' % mpjpe_sh[j])
-        metric_dict[joint_name + '_sh'] = mpjpe_sh[j]
-
-    metric_dict['mpjpe_sh'] = np.mean(mpjpe_sh)
     if verbose:
         print(eval_summary)
         print('MPJPE for single hand sequences: %.2f' % (
@@ -379,7 +382,7 @@ def evaluate(
 
     metric_dict = compute_metric_dict(
         acc_hand_cls, hand_cls_cnt, mrrpe,
-        joint_num, mpjpe_sh, mpjpe_ih,
+        joint_num, mpjpe_sh, mpjpe_ih,  #mpjpe_sh为啥的出来是空的啊
         per_bone_diff_list, bone_dict,
         skeleton, verbose)
 

@@ -28,11 +28,11 @@ def process_annot(anno_path):
     print('Saved to ' + out_path)
 
 
-anno_path = '../data/InterHand/annotations/train/InterHand2.6M_train_data.json'
+anno_path = r'\\105.1.1.1\Hand\HO&HH\InterHand2.6M\downloads\InterHand2.6M.annotations.5.fps/annotations/train/InterHand2.6M_train_data.json'
 process_annot(anno_path)
 
-anno_path = '../data/InterHand/annotations/val/InterHand2.6M_val_data.json'
+anno_path = r'\\105.1.1.1\Hand\HO&HH\InterHand2.6M\downloads\InterHand2.6M.annotations.5.fps/annotations/val/InterHand2.6M_val_data.json'
 process_annot(anno_path)
 
-anno_path = '../data/InterHand/annotations/test/InterHand2.6M_test_data.json'
+anno_path = r'\\105.1.1.1\Hand\HO&HH\InterHand2.6M\downloads\InterHand2.6M.annotations.5.fps/annotations/test/InterHand2.6M_test_data.json'
 process_annot(anno_path)

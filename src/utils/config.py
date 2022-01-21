@@ -120,7 +120,7 @@ def parse_args_function():
     parser.add_argument(
         "--eval_on",
         type=str,
-        default="",
+        default="val",
         choices=["val", "test", "minival", "minitest"],
         help="Test mode set to eval on",
     )
@@ -166,7 +166,7 @@ cfg = parse_args_function()
 assert (
     cfg.annot_subset
 ), "Please set proper annotation subset. Select one of all, human_annot, machine_annot"
-cfg.anno_path = "./data/InterHand/annotations/"
+cfg.anno_path = r"\\105.1.1.1\Hand\HO&HH\InterHand2.6M\downloads\InterHand2.6M.annotations.5.fps/annotations"
 
 
 if cfg.experiment is None and cfg.eval_on not in ["val", "test", "minitest", "minival"]:

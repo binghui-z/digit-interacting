@@ -8,7 +8,7 @@ from pytorch_lightning.trainer import Trainer as TrainerPL
 def test_model(args):
     pl.seed_everything(args.seed)
     model = fetch_pl_model(args, args.experiment)
-
+    args.num_workers = 0
     if 'val' in args.eval_on:
         loader = fetch_val_dataloader(args, 'val', args.eval_on)
     elif 'test' in args.eval_on:

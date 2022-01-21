@@ -241,6 +241,7 @@ def generate_vis_images(
     ax_pred.view_init(90, 0)
     plt.tight_layout()
     im_list.append(vis_utils.fig2img(fig))
+    plt.pause(5)
     plt.close()
     return im_list
 

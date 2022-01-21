@@ -3,7 +3,7 @@ import os
 import pickle
 import argparse
 from glob import glob
-import pygit2
+
 from email.message import EmailMessage
 import smtplib
 import pyarrow as pa
@@ -12,7 +12,7 @@ import numpy as np
 import lmdb
 import os.path as op
 import cv2 as cv
-
+import pygit2
 
 def get_branch():
     return pygit2.Repository('.').head.shorthand
@@ -122,19 +122,21 @@ def read_lmdb_image(txn, fname):
 def package_lmdb(lmdb_name, map_size, fnames, keys, write_frequency=5000):
     """
     Package image files into a lmdb database.
-    fnames are the paths to each file and also the key to fetch the images.
     lmdb_name is the name of the lmdb database file
     map_size: recommended to set to len(fnames)*num_types_per_image*10
+    fnames are the PATHS to each file and also the key to fetch the images.   
     keys: the key of each image in dict
     """
-    assert len(fnames) == len(keys)
-    db = lmdb.open(lmdb_name, map_size=map_size)
+    assert len(fnames) == len(keys)     #判断是否一致的问题，保证代码安全。可以借鉴学习
+    db = lmdb.open(lmdb_name, map_size=map_size) 
+    #?LMDB 全称为 Lightning Memory-Mapped Database，就是非常快的内存映射型数据库，LMDB使用内存映射文件，可以提供更好的输入/
+    #?输出性能，对于用于神经网络的大型数据集( 比如 ImageNet )，可以将其存储在 LMDB 中。
     txn = db.begin(write=True)
     for idx, (fname, key) in tqdm(enumerate(zip(fnames, keys)), total=len(fnames)):
         img = cv.imread(fname)
-        img = cv.cvtColor(img, cv.COLOR_BGR2RGB)
-        status, encoded_image = cv.imencode(
-            ".png", img, [cv.IMWRITE_JPEG_QUALITY, 100]
+        img = cv.cvtColor(img, cv.COLOR_BGR2RGB)    #通道转换
+        status, encoded_image = cv.imencode(   #cv2.imencode()函数是将图片格式转换(编码)成流数据，赋值到内存缓存中;主要用于图像数据格式的压缩，方便网络传输
+            ".png", img, [cv.IMWRITE_JPEG_QUALITY, 100]   # '.png'表示把当前图片img按照png格式编码，按照不同格式编码的结果不一样
         )
         assert status
         txn.put(key.encode('ascii'), encoded_image.tostring())

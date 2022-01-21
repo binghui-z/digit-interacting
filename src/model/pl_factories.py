@@ -47,7 +47,7 @@ def fetch_train_dataloader(cfg, split):
 
 def fetch_val_dataloader(cfg, test_set, split, shuffle=False):
     print("Creating " + test_set + " dataset...")
-    testset_loader = ImageDataset(transforms.ToTensor(), test_set, split, cfg)
+    testset_loader = ImageDataset(transforms.ToTensor(), test_set, split, cfg)   #调用的是image_dataset，所以读取的序列数量和demo.py是一样的
     batch_generator = DataLoader(
         dataset=testset_loader,
         batch_size=cfg.num_gpus * cfg.test_batch_size,

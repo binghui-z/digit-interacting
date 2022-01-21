@@ -7,7 +7,7 @@ saved_models/
 figures/
 data/
 visualization/
-
+.vscode
 *.pt
 *.npy
 *.pkl

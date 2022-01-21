@@ -35,7 +35,8 @@ def prepare_data(vis_dict):
 
     im_path = [
             ip.replace(
-                './data/InterHand2.6M/images/', ''
+                '\\\\105.1.1.1\Hand\HO&HH\InterHand2.6M\downloads\InterHand2.6M.images.5.fps.v0.0\InterHand2.6M_5fps_batch0\images', 
+                'data\InterHand'
             ).replace('.jpg', '') for ip in im_path]
 
     plt_dict = {}
@@ -111,6 +112,7 @@ def vis_amodal_rgb(
     ax[1, 3].imshow(diff_l)
     ax[1, 4].imshow(curr_img)
     plt.subplots_adjust(wspace=0.05, hspace=0.2)
+    plt.pause(5)
     plt.close()
     im = vis_utils.fig2img(fig)
     return im
@@ -119,7 +121,7 @@ def vis_amodal_rgb(
 def plt_img_hm_segm_kp(
         titles, curr_hm_norm, curr_pred_joint_2p5, curr_gt_joint_2p5,
         curr_img, curr_segm_mask, curr_joint_valid, joint_offset):
-    jidx_list = list(np.random.permutation(21)[:5])
+    jidx_list = list(np.random.permutation(21)[:5])   #随机选择五个keypoint
     fig, ax = plt.subplots(3, len(jidx_list), figsize=(20, 10))
     for sample_idx in range(len(jidx_list)):
         jidx = jidx_list[sample_idx] + joint_offset
@@ -149,6 +151,7 @@ def plt_img_hm_segm_kp(
                     curr_gt_joint[0], curr_gt_joint[1], marker='x', color='y', s=80)
 
     plt.subplots_adjust(wspace=0.05, hspace=0.2)
+    plt.pause(5)
     plt.close()
     im = vis_utils.fig2img(fig)
     return im
